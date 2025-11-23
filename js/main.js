@@ -471,3 +471,80 @@ window.addEventListener('load', () => {
 });
 
 console.log('🚀 FlexWork Agency - Website Loaded Successfully!');
+
+// ========== GOOGLE SIGN-IN ========== //
+// Replace 'YOUR_GOOGLE_CLIENT_ID' with your actual Google Client ID
+const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+
+// Initialize Google Sign-In when the script loads
+window.onload = function() {
+    // Initialize Google Sign-In
+    if (typeof google !== 'undefined') {
+        google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleGoogleSignIn
+        });
+        
+        // Render the Google Sign-In button
+        google.accounts.id.renderButton(
+            document.getElementById('googleSignInButton'),
+            {
+                theme: 'filled_blue',
+                size: 'large',
+                text: 'signin_with',
+                shape: 'rectangular',
+                width: 300
+            }
+        );
+        
+        // Optional: Show One Tap dialog
+        // google.accounts.id.prompt();
+    }
+};
+
+// Handle Google Sign-In response
+function handleGoogleSignIn(response) {
+    // The response contains the JWT token
+    const credential = response.credential;
+    
+    // Decode the JWT token to get user information
+    const userData = parseJwt(credential);
+    
+    console.log('User signed in:', userData);
+    
+    // Display user info
+    alert(`Welcome, ${userData.name}!\nEmail: ${userData.email}`);
+    
+    // Close the login modal
+    closeModal('loginModal');
+    
+    // Here you would typically:
+    // 1. Send the credential to your backend for verification
+    // 2. Create a session
+    // 3. Redirect to dashboard or update UI
+    
+    // Example: Redirect to dashboard
+    // window.location.href = 'client-dashboard.html';
+}
+
+// Utility function to decode JWT token
+function parseJwt(token) {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+        atob(base64)
+            .split('')
+            .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+            .join('')
+    );
+    return JSON.parse(jsonPayload);
+}
+
+// Sign Out function (optional)
+function googleSignOut() {
+    if (typeof google !== 'undefined') {
+        google.accounts.id.disableAutoSelect();
+        console.log('User signed out');
+        // Clear your application's session/state
+    }
+}

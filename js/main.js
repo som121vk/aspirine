@@ -9,14 +9,14 @@ const navbar = document.querySelector('.navbar');
 
 window.addEventListener('scroll', () => {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    
+
     // Add shadow when scrolled
     if (scrollTop > 50) {
         navbar.classList.add('scrolled');
     } else {
         navbar.classList.remove('scrolled');
     }
-    
+
     lastScrollTop = scrollTop;
 });
 
@@ -127,16 +127,16 @@ const portfolioData = [
 function renderPortfolio(filter = 'all') {
     const portfolioGrid = document.getElementById('portfolioGrid');
     portfolioGrid.innerHTML = '';
-    
-    const filteredItems = filter === 'all' 
-        ? portfolioData 
+
+    const filteredItems = filter === 'all'
+        ? portfolioData
         : portfolioData.filter(item => item.category === filter);
-    
+
     filteredItems.forEach((item, index) => {
         const portfolioItem = document.createElement('div');
         portfolioItem.className = 'portfolio-item';
         portfolioItem.style.animation = `fadeIn 0.5s ease-out ${index * 0.1}s both`;
-        
+
         portfolioItem.innerHTML = `
             <div class="portfolio-image">${item.icon}</div>
             <div class="portfolio-content">
@@ -144,7 +144,7 @@ function renderPortfolio(filter = 'all') {
                 <p class="portfolio-category">${item.description}</p>
             </div>
         `;
-        
+
         portfolioGrid.appendChild(portfolioItem);
     });
 }
@@ -284,14 +284,14 @@ function openServiceModal(serviceType) {
             pricing: 'Starting from ₹20,000/month'
         }
     };
-    
+
     const service = serviceInfo[serviceType];
-    
+
     if (service) {
         const featuresHTML = service.features.map(f => `<li>✓ ${f}</li>`).join('');
-        
+
         alert(`${service.title}\n\n${service.description}\n\nKey Features:\n${service.features.join('\n')}\n\n${service.pricing}\n\nContact us to get started!`);
-        
+
         // In a production app, you'd show a proper modal instead of alert
         showContactModal();
     }
@@ -304,13 +304,13 @@ function selectPlan(planType) {
         'professional': 'Professional Plan - ₹25,000',
         'enterprise': 'Enterprise Plan - Custom Pricing'
     };
-    
+
     if (planType === 'enterprise') {
         alert(`You've selected the ${plans[planType]}. Let's discuss your requirements!`);
     } else {
         alert(`You've selected the ${plans[planType]}. Let's get started!`);
     }
-    
+
     showContactModal();
 }
 
@@ -319,19 +319,19 @@ const contactForm = document.getElementById('contactForm');
 if (contactForm) {
     contactForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        
+
         // Get form data
         const formData = new FormData(contactForm);
-        
+
         // Show success message
         alert('Thank you for your project submission! We will get back to you within 24 hours.');
-        
+
         // Close modal
         closeModal('contactModal');
-        
+
         // Reset form
         contactForm.reset();
-        
+
         // In production, you would send this data to your backend
         console.log('Form submitted:', Object.fromEntries(formData));
     });
@@ -355,7 +355,7 @@ const observer = new IntersectionObserver((entries) => {
 // Observe all cards and sections
 document.addEventListener('DOMContentLoaded', () => {
     const animatedElements = document.querySelectorAll('.service-card, .process-step, .pricing-card');
-    
+
     animatedElements.forEach(el => {
         el.style.opacity = '0';
         el.style.transform = 'translateY(30px)';
@@ -368,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function animateCounter(element, target, duration = 2000) {
     let start = 0;
     const increment = target / (duration / 16);
-    
+
     const timer = setInterval(() => {
         start += increment;
         if (start >= target) {
@@ -404,7 +404,7 @@ if (heroStats) {
 function createParticles() {
     const hero = document.querySelector('.hero');
     if (!hero) return;
-    
+
     for (let i = 0; i < 50; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
@@ -443,7 +443,7 @@ function debounce(func, wait) {
 // Throttle function for scroll events
 function throttle(func, limit) {
     let inThrottle;
-    return function() {
+    return function () {
         const args = arguments;
         const context = this;
         if (!inThrottle) {
@@ -473,18 +473,18 @@ window.addEventListener('load', () => {
 console.log('🚀 FlexWork Agency - Website Loaded Successfully!');
 
 // ========== GOOGLE SIGN-IN ========== //
-// Replace 'YOUR_GOOGLE_CLIENT_ID' with your actual Google Client ID
-const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+// Google OAuth Client ID
+const GOOGLE_CLIENT_ID = '762400240434-cnn7gho3gqfk5k0dpohe3lms0ainn9u0.apps.googleusercontent.com';
 
 // Initialize Google Sign-In when the script loads
-window.onload = function() {
+window.onload = function () {
     // Initialize Google Sign-In
     if (typeof google !== 'undefined') {
         google.accounts.id.initialize({
             client_id: GOOGLE_CLIENT_ID,
             callback: handleGoogleSignIn
         });
-        
+
         // Render the Google Sign-In button
         google.accounts.id.renderButton(
             document.getElementById('googleSignInButton'),
@@ -496,7 +496,7 @@ window.onload = function() {
                 width: 300
             }
         );
-        
+
         // Optional: Show One Tap dialog
         // google.accounts.id.prompt();
     }
@@ -506,23 +506,23 @@ window.onload = function() {
 function handleGoogleSignIn(response) {
     // The response contains the JWT token
     const credential = response.credential;
-    
+
     // Decode the JWT token to get user information
     const userData = parseJwt(credential);
-    
+
     console.log('User signed in:', userData);
-    
+
     // Display user info
     alert(`Welcome, ${userData.name}!\nEmail: ${userData.email}`);
-    
+
     // Close the login modal
     closeModal('loginModal');
-    
+
     // Here you would typically:
     // 1. Send the credential to your backend for verification
     // 2. Create a session
     // 3. Redirect to dashboard or update UI
-    
+
     // Example: Redirect to dashboard
     // window.location.href = 'client-dashboard.html';
 }

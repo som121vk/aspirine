@@ -1,5 +1,5 @@
 // ==========================================
-// FLEXWORK AGENCY - MAIN JAVASCRIPT
+// ASPIRINE - MAIN JAVASCRIPT
 // Modern, Interactive, Animated
 // ==========================================
 
@@ -517,7 +517,7 @@ window.addEventListener('load', () => {
     document.body.classList.add('loaded');
 });
 
-console.log('🚀 FlexWork Agency - Website Loaded Successfully!');
+console.log('🚀 Aspirine - Website Loaded Successfully!');
 
 // ========== GOOGLE SIGN-IN ========== //
 // Google OAuth Client ID

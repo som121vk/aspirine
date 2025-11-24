@@ -233,27 +233,6 @@
             padding: 0 16px;
         }
 
-        .google-btn {
-            width: 100%;
-            padding: 14px;
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
-
-        .google-btn:hover {
-            border-color: #667eea;
-            background: #f8f9ff;
-        }
-
         .signup-link {
             text-align: center;
             margin-top: 24px;
@@ -415,18 +394,16 @@
             const user = users.find(u => u.email === email && u.password === password);
 
             if (user) {
-                // Create session
-                const session = {
-                    authenticated: true,
-                    user: {
-                        name: user.name,
-                        email: user.email
-                    },
-                    loginTime: new Date().getTime(),
-                    expiresAt: new Date().getTime() + (24 * 60 * 60 * 1000) // 24 hours
+                // Create session using the same key as main.js
+                const currentUser = {
+                    name: user.name,
+                    email: user.email,
+                    picture: null,
+                    authMethod: 'Email',
+                    loginTime: new Date().toISOString()
                 };
 
-                localStorage.setItem('aspirineUserSession', JSON.stringify(session));
+                localStorage.setItem('aspirineCurrentUser', JSON.stringify(currentUser));
 
                 // Show success
                 errorMessage.style.background = '#d4edda';
@@ -472,30 +449,66 @@
             const credential = response.credential;
             const userData = parseJwt(credential);
 
-            // Create session
-            const session = {
-                authenticated: true,
-                user: {
-                    name: userData.name,
-                    email: userData.email
-                },
-                loginTime: new Date().getTime(),
-                expiresAt: new Date().getTime() + (24 * 60 * 60 * 1000)
+            // Create session using the same key as main.js
+            const currentUser = {
+                name: userData.name,
+                email: userData.email,
+                picture: userData.picture || null,
+                authMethod: 'Google',
+                loginTime: new Date().toISOString()
             };
 
-            localStorage.setItem('aspirineUserSession', JSON.stringify(session));
+            localStorage.setItem('aspirineCurrentUser', JSON.stringify(currentUser));
 
             // Save user to admin panel
-            if (typeof window.addUser === 'function') {
-                window.addUser({
-                    name: userData.name,
-                    email: userData.email,
-                    authMethod: 'Google'
-                });
-            }
+            saveUserToAdmin({
+                name: userData.name,
+                email: userData.email,
+                authMethod: 'Google'
+            });
 
             // Redirect
             window.location.href = 'index.html';
+        }
+
+        // Function to save user data to admin panel
+        function saveUserToAdmin(userData) {
+            try {
+                // Get existing admin data
+                let adminData = JSON.parse(localStorage.getItem('aspirineAdminData')) || {
+                    projects: [],
+                    feedback: [],
+                    users: [],
+                    analytics: {}
+                };
+
+                // Check if user already exists
+                const existingUser = adminData.users.find(u => u.email === userData.email);
+
+                if (existingUser) {
+                    // Update last login
+                    existingUser.lastLogin = new Date().toISOString();
+                } else {
+                    // Create new user entry
+                    const newUser = {
+                        id: adminData.users.length + 1,
+                        name: userData.name,
+                        email: userData.email,
+                        authMethod: userData.authMethod || 'Email',
+                        registrationDate: new Date().toISOString(),
+                        lastLogin: new Date().toISOString(),
+                        status: 'active'
+                    };
+
+                    // Add to users array
+                    adminData.users.push(newUser);
+                }
+
+                // Save back to localStorage
+                localStorage.setItem('aspirineAdminData', JSON.stringify(adminData));
+            } catch (error) {
+                console.error('Error saving user to admin panel:', error);
+            }
         }
 
         function parseJwt(token) {
@@ -509,17 +522,11 @@
 
         // ========== CHECK EXISTING SESSION ========== //
         window.addEventListener('load', () => {
-            const session = localStorage.getItem('aspirineUserSession');
+            const currentUser = localStorage.getItem('aspirineCurrentUser');
 
-            if (session) {
-                const sessionData = JSON.parse(session);
-                const now = new Date().getTime();
-
-                if (sessionData.authenticated && sessionData.expiresAt > now) {
-                    window.location.href = 'index.html';
-                } else {
-                    localStorage.removeItem('aspirineUserSession');
-                }
+            if (currentUser) {
+                // User is already logged in, redirect to home
+                window.location.href = 'index.html';
             }
         });
 

@@ -489,8 +489,59 @@ console.log('🚀 Aspirine - Website Loaded Successfully!');
 // Google OAuth Client ID
 const GOOGLE_CLIENT_ID = '762400240434-cnn7gho3gqfk5k0dpohe3lms0ainn9u0.apps.googleusercontent.com';
 
+// Check login state on page load
+function checkLoginState() {
+    const currentUser = JSON.parse(localStorage.getItem('aspirineCurrentUser'));
+
+    if (currentUser) {
+        // User is logged in, update the UI
+        updateNavForLoggedInUser(currentUser);
+    }
+}
+
+// Update navigation for logged in user
+function updateNavForLoggedInUser(user) {
+    const navActions = document.querySelector('.nav-actions');
+
+    if (!navActions) return;
+
+    // Find the login button and replace it with logout button
+    const loginBtn = navActions.querySelector('button[onclick="showLoginModal()"]');
+
+    if (loginBtn) {
+        // Create logout button
+        const logoutBtn = document.createElement('button');
+        logoutBtn.className = 'btn-secondary';
+        logoutBtn.textContent = 'Logout';
+        logoutBtn.onclick = handleLogout;
+
+        // Replace login with logout
+        navActions.replaceChild(logoutBtn, loginBtn);
+    }
+}
+
+// Handle user logout
+function handleLogout() {
+    // Clear current user from localStorage
+    localStorage.removeItem('aspirineCurrentUser');
+
+    // Google Sign-Out
+    if (typeof google !== 'undefined') {
+        google.accounts.id.disableAutoSelect();
+    }
+
+    // Show confirmation
+    alert('You have been logged out successfully!');
+
+    // Reload the page to reset UI
+    window.location.reload();
+}
+
 // Initialize Google Sign-In when the script loads
 window.onload = function () {
+    // Check if user is already logged in
+    checkLoginState();
+
     // Initialize Google Sign-In
     if (typeof google !== 'undefined') {
         google.accounts.id.initialize({
@@ -498,17 +549,20 @@ window.onload = function () {
             callback: handleGoogleSignIn
         });
 
-        // Render the Google Sign-In button
-        google.accounts.id.renderButton(
-            document.getElementById('googleSignInButton'),
-            {
-                theme: 'filled_blue',
-                size: 'large',
-                text: 'signin_with',
-                shape: 'rectangular',
-                width: 300
-            }
-        );
+        // Render the Google Sign-In button (only if element exists)
+        const googleSignInButton = document.getElementById('googleSignInButton');
+        if (googleSignInButton) {
+            google.accounts.id.renderButton(
+                googleSignInButton,
+                {
+                    theme: 'filled_blue',
+                    size: 'large',
+                    text: 'signin_with',
+                    shape: 'rectangular',
+                    width: 300
+                }
+            );
+        }
 
         // Optional: Show One Tap dialog
         // google.accounts.id.prompt();
@@ -525,6 +579,16 @@ function handleGoogleSignIn(response) {
 
     console.log('User signed in:', userData);
 
+    // Save user session to localStorage
+    const currentUser = {
+        name: userData.name,
+        email: userData.email,
+        picture: userData.picture || null,
+        authMethod: 'Google',
+        loginTime: new Date().toISOString()
+    };
+    localStorage.setItem('aspirineCurrentUser', JSON.stringify(currentUser));
+
     // Save user to admin panel
     saveUserToAdmin({
         name: userData.name,
@@ -538,12 +602,15 @@ function handleGoogleSignIn(response) {
     // Close the login modal
     closeModal('loginModal');
 
+    // Update the UI to show logout button
+    updateNavForLoggedInUser(currentUser);
+
     // Here you would typically:
     // 1. Send the credential to your backend for verification
     // 2. Create a session
     // 3. Redirect to dashboard or update UI
 
-    // Example: Redirect to dashboard
+    // Optional: Redirect to dashboard
     // window.location.href = 'client-dashboard.html';
 }
 
@@ -602,11 +669,4 @@ function parseJwt(token) {
     return JSON.parse(jsonPayload);
 }
 
-// Sign Out function (optional)
-function googleSignOut() {
-    if (typeof google !== 'undefined') {
-        google.accounts.id.disableAutoSelect();
-        console.log('User signed out');
-        // Clear your application's session/state
-    }
-}
+

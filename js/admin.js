@@ -645,7 +645,10 @@ document.getElementById('globalSearch')?.addEventListener('input', (e) => {
 // ========== LOGOUT ========== //
 function logout() {
     if (confirm('Are you sure you want to logout?')) {
-        window.location.href = 'index.html';
+        // Clear admin session
+        localStorage.removeItem('aspirineAdminSession');
+        // Redirect to login page
+        window.location.href = 'admin-login.html';
     }
 }
 

@@ -322,6 +322,17 @@ if (contactForm) {
 
         // Get form data
         const formData = new FormData(contactForm);
+        const formObject = Object.fromEntries(formData);
+
+        // Save to admin panel
+        saveProjectToAdmin({
+            name: formObject['name'] || contactForm.querySelector('input[type="text"]').value,
+            email: formObject['email'] || contactForm.querySelector('input[type="email"]').value,
+            phone: formObject['phone'] || contactForm.querySelector('input[type="tel"]').value,
+            service: formObject['service'] || contactForm.querySelector('select').value,
+            budget: formObject['budget'] || contactForm.querySelectorAll('select')[1]?.value || 'Not specified',
+            details: formObject['details'] || contactForm.querySelector('textarea').value
+        });
 
         // Show success message
         alert('Thank you for your project submission! We will get back to you within 24 hours.');
@@ -333,8 +344,44 @@ if (contactForm) {
         contactForm.reset();
 
         // In production, you would send this data to your backend
-        console.log('Form submitted:', Object.fromEntries(formData));
+        console.log('Form submitted:', formObject);
     });
+}
+
+// Function to save project data to admin panel
+function saveProjectToAdmin(projectData) {
+    try {
+        // Get existing admin data
+        let adminData = JSON.parse(localStorage.getItem('aspirineAdminData')) || {
+            projects: [],
+            feedback: [],
+            users: [],
+            analytics: {}
+        };
+
+        // Create new project entry
+        const newProject = {
+            id: adminData.projects.length + 1,
+            name: projectData.name,
+            email: projectData.email,
+            phone: projectData.phone,
+            service: projectData.service,
+            budget: projectData.budget,
+            status: 'pending',
+            details: projectData.details,
+            date: new Date().toISOString()
+        };
+
+        // Add to projects array
+        adminData.projects.push(newProject);
+
+        // Save back to localStorage
+        localStorage.setItem('aspirineAdminData', JSON.stringify(adminData));
+
+        console.log('✅ Project saved to admin panel:', newProject);
+    } catch (error) {
+        console.error('Error saving to admin panel:', error);
+    }
 }
 
 // ========== ANIMATIONS ON SCROLL ========== //
@@ -512,6 +559,13 @@ function handleGoogleSignIn(response) {
 
     console.log('User signed in:', userData);
 
+    // Save user to admin panel
+    saveUserToAdmin({
+        name: userData.name,
+        email: userData.email,
+        authMethod: 'Google'
+    });
+
     // Display user info
     alert(`Welcome, ${userData.name}!\nEmail: ${userData.email}`);
 
@@ -525,6 +579,48 @@ function handleGoogleSignIn(response) {
 
     // Example: Redirect to dashboard
     // window.location.href = 'client-dashboard.html';
+}
+
+// Function to save user data to admin panel
+function saveUserToAdmin(userData) {
+    try {
+        // Get existing admin data
+        let adminData = JSON.parse(localStorage.getItem('aspirineAdminData')) || {
+            projects: [],
+            feedback: [],
+            users: [],
+            analytics: {}
+        };
+
+        // Check if user already exists
+        const existingUser = adminData.users.find(u => u.email === userData.email);
+
+        if (existingUser) {
+            // Update last login
+            existingUser.lastLogin = new Date().toISOString();
+            console.log('✅ User login updated in admin panel:', existingUser);
+        } else {
+            // Create new user entry
+            const newUser = {
+                id: adminData.users.length + 1,
+                name: userData.name,
+                email: userData.email,
+                authMethod: userData.authMethod || 'Email',
+                registrationDate: new Date().toISOString(),
+                lastLogin: new Date().toISOString(),
+                status: 'active'
+            };
+
+            // Add to users array
+            adminData.users.push(newUser);
+            console.log('✅ New user saved to admin panel:', newUser);
+        }
+
+        // Save back to localStorage
+        localStorage.setItem('aspirineAdminData', JSON.stringify(adminData));
+    } catch (error) {
+        console.error('Error saving user to admin panel:', error);
+    }
 }
 
 // Utility function to decode JWT token

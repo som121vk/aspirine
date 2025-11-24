@@ -315,40 +315,6 @@ function selectPlan(planType) {
 }
 
 // ========== FORM SUBMISSIONS ========== //
-const contactForm = document.getElementById('contactForm');
-if (contactForm) {
-    contactForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        // Get form data
-        const formData = new FormData(contactForm);
-        const formObject = Object.fromEntries(formData);
-
-        // Save to admin panel
-        saveProjectToAdmin({
-            name: formObject['name'] || contactForm.querySelector('input[type="text"]').value,
-            email: formObject['email'] || contactForm.querySelector('input[type="email"]').value,
-            phone: formObject['phone'] || contactForm.querySelector('input[type="tel"]').value,
-            service: formObject['service'] || contactForm.querySelector('select').value,
-            budget: formObject['budget'] || contactForm.querySelectorAll('select')[1]?.value || 'Not specified',
-            details: formObject['details'] || contactForm.querySelector('textarea').value
-        });
-
-        // Show success message
-        alert('Thank you for your project submission! We will get back to you within 24 hours.');
-
-        // Close modal
-        closeModal('contactModal');
-
-        // Reset form
-        contactForm.reset();
-
-        // In production, you would send this data to your backend
-        console.log('Form submitted:', formObject);
-    });
-}
-
-// Function to save project data to admin panel
 function saveProjectToAdmin(projectData) {
     try {
         // Get existing admin data
